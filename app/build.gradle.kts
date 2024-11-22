@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp") version "1.9.0-1.0.13"
     id("kotlin-parcelize")
+
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -64,6 +67,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.firebase.firestore.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -83,5 +87,9 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.lifecycle:lifecycle-common-java8:2.8.6")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
 
 }

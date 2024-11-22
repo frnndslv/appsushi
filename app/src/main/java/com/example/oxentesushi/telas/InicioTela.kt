@@ -27,6 +27,11 @@ fun InicioTela(navController: NavHostController){
         Text( text = "Oxente Sushi", style = MaterialTheme.typography.headlineLarge)
         Text( text = "Aplicativo do Funcionário", style = MaterialTheme.typography.headlineLarge)
         Button(
+            onClick = {navController.navigate("login")}
+        ){
+            Text(text = "Login")
+        }
+        Button(
             onClick = {navController.navigate("menu")}
         ){
             Text(text = "Adicionar ao Menu")

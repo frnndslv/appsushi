@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -31,18 +32,18 @@ import androidx.lifecycle.LiveData
 import androidx.navigation.NavHostController
 import com.example.oxentesushi.data.AppDatabase
 import com.example.oxentesushi.data.Sushi
+import com.example.oxentesushi.data.cardapio.Cardapio
+import com.example.oxentesushi.data.usuario.Usuario
+import com.example.oxentesushi.ui.viewmodel.CardapioViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
-fun MenuSushi(navController: NavHostController) {
+fun MenuSushi(navController: NavHostController,  cardapioViewModel: CardapioViewModel) {
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val db = AppDatabase.getDatabase(context)
 
-
-    val sushiLiveData: LiveData<List<Sushi>> = db.sushiDao().getAllSushi()
-    val sushiList by sushiLiveData.observeAsState(emptyList())
+    val sushiLiveData by cardapioViewModel.cardapios.collectAsState()
 
     Column(
         modifier = Modifier
@@ -54,9 +55,9 @@ fun MenuSushi(navController: NavHostController) {
         Spacer(modifier = Modifier.height(26.dp))
 
 
-        SushiInputField { sushiName ->
+        SushiInputField (cardapioViewModel) { sushiName ->
             coroutineScope.launch {
-                db.sushiDao().insertSushi(Sushi(name = sushiName))
+                //db.sushiDao().insertSushi(Sushi(name = sushiName))
             }
         }
 
@@ -64,14 +65,14 @@ fun MenuSushi(navController: NavHostController) {
 
 
         LazyColumn {
-            items(sushiList) { sushi ->
+            items(sushiLiveData) { sushi ->
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
 
                     Button(
                         onClick = { navController.navigate("listaSushi/${sushi.id}") },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(text = sushi.name)
+                        Text(text = sushi.nome)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -79,7 +80,7 @@ fun MenuSushi(navController: NavHostController) {
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                db.sushiDao().deleteSushi(sushi)
+                                cardapioViewModel.excluir(Cardapio(sushi.id,sushi.nome))
                             }
                         },
                         modifier = Modifier
@@ -100,7 +101,7 @@ fun MenuSushi(navController: NavHostController) {
 }
 
 @Composable
-fun SushiInputField(onAddSushi: (String) -> Unit) {
+fun SushiInputField(cardapioViewModel: CardapioViewModel, onAddSushi: (String) -> Unit) {
     var newSushi by remember { mutableStateOf("") }
     Column {
         TextField(
@@ -113,7 +114,9 @@ fun SushiInputField(onAddSushi: (String) -> Unit) {
         Button(
             onClick = {
                 if (newSushi.isNotBlank()) {
-                    onAddSushi(newSushi)
+                    val cardapio = Cardapio()
+                    cardapio.nome = newSushi
+                    cardapioViewModel.gravar(cardapio)
                     newSushi = ""
                 }
             },

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "246128435301",
+    "project_id": "oxentesushi-e5c3c",
+    "storage_bucket": "oxentesushi-e5c3c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246128435301:android:4490300f30e2ef0e0fe68c",
+        "android_client_info": {
+          "package_name": "com.example.oxentesushi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrh_mf-nRTgP7wpmhnP6cVPQ5AIQfCdT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
