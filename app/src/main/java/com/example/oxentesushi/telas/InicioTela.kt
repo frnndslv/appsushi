@@ -41,5 +41,6 @@ fun InicioTela(navController: NavHostController){
         ){
             Text(text = "Edição de pratos")
         }
+
     }
 }

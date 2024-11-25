@@ -68,6 +68,9 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.constraintlayout.compose.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,9 +90,19 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.lifecycle:lifecycle-common-java8:2.8.6")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+    implementation ("io.coil-kt:coil-compose:2.2.2")
+
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics")
+
+    //retrofit upload img
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation ("io.coil-kt:coil-compose:2.2.2")
+
+    implementation ("androidx.compose.material:material-icons-extended")
 
 }
