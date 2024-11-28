@@ -26,11 +26,14 @@ import com.example.oxentesushi.telas.MenuSushi
 import com.example.oxentesushi.ui.theme.OxenteSushiTheme
 import com.example.oxentesushi.ui.viewmodel.CardapioViewModel
 import com.example.oxentesushi.ui.viewmodel.UsuarioViewModel
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        FirebaseApp.initializeApp(this)
 
         val db = abrirBancoDeDados(this)
         val cardapioDb = abrirCardapioBancoDeDados(this)

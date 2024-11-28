@@ -12,7 +12,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.content.MediaType.Companion.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,10 +37,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -46,8 +50,10 @@ import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.oxentesushi.data.cardapio.Cardapio
 import com.example.oxentesushi.data.imgUpload.IUploadImg
+import com.example.oxentesushi.ui.theme.ImageFromUrl
 import com.example.oxentesushi.ui.viewmodel.CardapioViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -85,48 +91,56 @@ fun MenuSushi(navController: NavHostController,  cardapioViewModel: CardapioView
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Text(text = "--Cardapio--", fontWeight = FontWeight.Bold)
+        }
 
         LazyColumn {
             items(sushiLiveData) { sushi ->
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-
-                    Button(
-                        onClick = { navController.navigate("listaSushi/${sushi.id}") },
-                        modifier = Modifier.fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                                    .fillMaxWidth(),
                     ) {
                         Column {
+                            Text(text = "Nome do prato:", fontWeight = FontWeight.Bold)
                             Text(text = sushi.nome)
-                            sushi.imgUri.let {
-                                val painter = rememberAsyncImagePainter(it) // Coil to load image
-
-                                Image(
-                                    painter = painter,
-                                    contentDescription = "Image from Firestore",
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                            Text(text = "Imagem do prato:", fontWeight = FontWeight.Bold)
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                ImageFromUrl(imageUrl = sushi.img)
                             }
+                            Text(text = "Valor do prato:", fontWeight = FontWeight.Bold)
                             Text(text = sushi.valor)
                         }
                     }
+
                     Spacer(modifier = Modifier.height(4.dp))
 
+                    Row {
+                        Button(
+                            onClick = { navController.navigate("listaSushi/${sushi.id}") },
+                            modifier = Modifier
+                                .fillMaxWidth(0.33f)
+                        ) {
+                            Text(text = "Editar")
+                        }
 
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                cardapioViewModel.excluir(Cardapio(sushi.id,sushi.nome, sushi.img, sushi.valor))
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(0.33f)
-                            .background(Color.Red),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text(text = "Deletar")
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    cardapioViewModel.excluir(Cardapio(sushi.id,sushi.nome, sushi.img, sushi.valor))
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(0.50f)
+                                .background(Color.Red),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(text = "Deletar")
+                        }
                     }
 
                 }
@@ -139,6 +153,7 @@ fun MenuSushi(navController: NavHostController,  cardapioViewModel: CardapioView
 fun SushiInputField(cardapioViewModel: CardapioViewModel, onAddSushi: (String) -> Unit) {
     var newSushi by remember { mutableStateOf("") }
     var valorDoPrato by remember { mutableStateOf("") }
+    var imgUploaded by remember { mutableStateOf<StorageReference?>(null) }
 
     //
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -149,7 +164,7 @@ fun SushiInputField(cardapioViewModel: CardapioViewModel, onAddSushi: (String) -
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
             imageUri = uri
-            uploadImage(uri)
+            imgUploaded = uploadImage(uri)
         }
     }
 
@@ -198,19 +213,6 @@ fun SushiInputField(cardapioViewModel: CardapioViewModel, onAddSushi: (String) -
             Text("Selecionar Imagem")
         }
 
-        /*Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                imageUri?.let { uri ->
-                    uploadImage(context,uri)
-                }
-            },
-            enabled = imageUri != null
-        ) {
-            Text("Fazer Upload")
-        }*/
-
-        //Fim tratamento de imagem
 
         TextField(
             value = valorDoPrato,
@@ -226,11 +228,16 @@ fun SushiInputField(cardapioViewModel: CardapioViewModel, onAddSushi: (String) -
             onClick = {
                 if (newSushi.isNotBlank()) {
                     val cardapio = Cardapio()
-                    cardapio.nome = newSushi
-                    cardapio.img = imageUri.toString()
-                    cardapio.valor = valorDoPrato
-                    cardapioViewModel.gravar(cardapio)
-                    newSushi = ""
+                    imgUploaded?.downloadUrl?.addOnSuccessListener { uri ->
+                        cardapio.nome = newSushi
+                        cardapio.img = uri.toString()
+                        cardapio.valor = valorDoPrato
+                        cardapioViewModel.gravar(cardapio)
+                        newSushi = ""
+                        valorDoPrato = ""
+                        imgUploaded = null
+                        imageUri = null
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -240,7 +247,7 @@ fun SushiInputField(cardapioViewModel: CardapioViewModel, onAddSushi: (String) -
     }
 }
 
-fun uploadImage(uploadUrl: Uri) {
+fun uploadImage(uploadUrl: Uri): StorageReference {
     val storage = Firebase.storage
     val storageRef = storage.reference
     val fileRef = storageRef.child("images/${UUID.randomUUID()}.jpg")
@@ -249,11 +256,19 @@ fun uploadImage(uploadUrl: Uri) {
 
     val uploadTask = fileRef.putFile(uploadUrl)
 
-    uploadTask.addOnSuccessListener {
-        Log.d("Firebase", "Upload bem-sucedido!")
-    }.addOnFailureListener { exception ->
-        Log.e("Firebase", "Erro ao fazer upload: ${exception.message}")
-    }
+    uploadTask
+        .addOnSuccessListener {
+            Log.d("Firebase", "Upload bem-sucedido!")
+            fileRef.downloadUrl.addOnSuccessListener { uri ->
+                Log.d("Firebase", "URL da imagem: $uri")
+            }
+        }
+        .addOnFailureListener { exception ->
+            Log.e("Firebase", "Erro ao fazer upload: ${exception.localizedMessage}")
+            exception.printStackTrace()
+        }
+
+    return fileRef;
 }
 
 

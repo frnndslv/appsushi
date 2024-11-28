@@ -14,7 +14,4 @@ data class Cardapio(
     var valor: String,
 ){
     constructor() : this(null, "", "", "")
-
-    val imgUri: Uri
-        get() = Uri.parse(img)
 }

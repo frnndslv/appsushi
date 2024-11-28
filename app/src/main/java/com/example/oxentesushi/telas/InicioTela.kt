@@ -36,11 +36,6 @@ fun InicioTela(navController: NavHostController){
         ){
             Text(text = "Adicionar ao Menu")
         }
-        Button(
-            onClick = {navController.navigate("listasushi/{sushiId}")}
-        ){
-            Text(text = "Edição de pratos")
-        }
 
     }
 }
